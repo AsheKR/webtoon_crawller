@@ -50,16 +50,8 @@ class WebtoonData:
             episode_list = list(filter(lambda e: e.get('class') == None, soup.select('div#content > table.viewList tr')[1:]))
 
             for one_episode in episode_list:
-                episode_id = re.search(r'no=(\d+)', one_episode.select('td')[0].select_one('a')['href']).group(1)
-
-                if episode_id not in self._episode_dict:
-                    title = one_episode.select_one('td.title > a').get_text(strip=True)
-                    url_img_thumbnail = one_episode('td')[0].select_one('a > img')['src']
-                    rating = one_episode.select_one('td div.rating_type strong').get_text(strip=True)
-                    created_date = one_episode.select_one('td.num').get_text(strip=True)
-
-                    new_episode_data = Episode(episode_id, title, url_img_thumbnail, created_date, rating)
-                    self._episode_dict[episode_id] = new_episode_data
+                new_episode_data = Episode.create_from_soup(one_episode)
+                self._episode_dict[new_episode_data.episode_id] = new_episode_data
 
         return self._episode_dict
 
