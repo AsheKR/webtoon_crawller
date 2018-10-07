@@ -39,7 +39,18 @@ class WebtoonData:
 
         webtoon_dict를 채울때와 비슷하게, 새로운 Episode클래스 인스턴스르 만들어 할당
 
-        page값을 1부터 늘려가면서 '다음' 버튼이 안보일때까지 내용을 가져옴
+        1.page값을 1부터 늘려가면서 '다음' 버튼이 안보일때까지 내용을 가져옴
+        1.1 이외에 최대의 episode_id를 가져온 후 10으로 나눠서 페이지를 계산하는 방법을 채택함
+        2. pickle을 사용해서 Crawler가 가진 webtoon_dict를 저장, 불러오기 하는 방식으로 중복 데이터를 웹에서 받지 않도록 함
+        3, CLI를 구성해서 사용자가 셸에서 선택해서 웹툰 크롤러 기능을 사용할 수 있도록 만들기
+        4. Episode의 Detail페이지에서 그림을 다운로드 받기
+                request로 그림 요청시 Referer 설정을 해줘야함 <- 안하면 403 또는 400 에러 발생
+                headers = {'Referer': 'http://comic.naver.com/webtoon/list.nhn?titleId=<WebtoonId>'}
+                저장시
+                    reponse = requests.get(<URL>)
+                    open(<path>, 'wb').write(response.content)
+                코드를 사용
+        5, 다운로드 받은 그림을 볼 수 있는 HTML 생성하기
 
         :return:
         """
