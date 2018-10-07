@@ -34,23 +34,6 @@ class WebtoonData:
         주소는 (에피소드 리스트 URL)
             https://comic.naver.com/webtoon/list.nhn?titleId={self.webtoon_id}
 
-        키는 Episode의 episode_id
-            에피소드 상세 URL에서 'no' GET parameter값에 해당
-
-        webtoon_dict를 채울때와 비슷하게, 새로운 Episode클래스 인스턴스르 만들어 할당
-
-        1.page값을 1부터 늘려가면서 '다음' 버튼이 안보일때까지 내용을 가져옴
-        2. pickle을 사용해서 Crawler가 가진 webtoon_dict를 저장, 불러오기 하는 방식으로 중복 데이터를 웹에서 받지 않도록 함
-        3, CLI를 구성해서 사용자가 셸에서 선택해서 웹툰 크롤러 기능을 사용할 수 있도록 만들기 (main.py)
-        4. Episode의 Detail페이지에서 그림을 다운로드 받기
-                request로 그림 요청시 Referer 설정을 해줘야함 <- 안하면 403 또는 400 에러 발생
-                headers = {'Referer': 'http://comic.naver.com/webtoon/list.nhn?titleId=<WebtoonId>'}
-                저장시
-                    reponse = requests.get(<URL>)
-                    open(<path>, 'wb').write(response.content)
-                코드를 사용
-        5, 다운로드 받은 그림을 볼 수 있는 HTML 생성하기
-
         :return:
         """
         page = 1
@@ -72,6 +55,14 @@ class WebtoonData:
         return self._episode_dict
 
     def save_imgFiles(self, index):
+        """
+        해당 웹툰의 특정 에피소드의 이미지를 받아 저장한다.
+        /save_data/webtoon_data/{웹툰 이름}/{에피소드 회차}
+        위처럼 기본적인 뼈대 폴더를 생성하는 일을 한다.
+
+        :param index: 특정 에피소드
+        :return:
+        """
         now_episode = self.episode_dict[index]
         dirname = 'save_data'
         title_dirname = self.title

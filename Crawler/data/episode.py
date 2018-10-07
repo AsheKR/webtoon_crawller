@@ -2,9 +2,22 @@ import re, requests, os, webbrowser
 from bs4 import BeautifulSoup
 
 def atoi(text):
+    """
+    입력받은 것이 문자면 숫자로, 숫자면 그대로 리턴해준다.
+
+    :param text:
+    :return:
+    """
     return int(text) if text.isdigit() else text
 
 def natural_keys(text):
+    """
+    content_image_{에피소드 회차}.jpg
+    이같은 형식에서 에피소드 회차, 즉 숫자인 부분을 뽑는 함수
+
+    :param text:
+    :return:
+    """
     return [ atoi(c) for c in re.split('(\d+)', text)]
 
 class Episode:
@@ -19,6 +32,14 @@ class Episode:
         return self.title
 
     def create_html(self, title, img_dir_path):
+        """
+        /save_data/webtoon_data/{웹툰 이름}/{에피소드 회차}
+        이 안에 html 파일을 생성하는 코드
+
+        :param title: 웹툰 이름
+        :param img_dir_path: 웹툰의 해당 에피소드가 저장되는 디렉터리
+        :return:
+        """
         html_str = f"<h1>{title}</h1>"
         img_file_path = os.path.join(img_dir_path, title+" "+self.episode_id+".html")
 
@@ -36,6 +57,13 @@ class Episode:
 
 
     def download_imgs(self, webtoon_id, img_dir_path):
+        """
+        특정 웹툰, 에피소드에서 jpg 파일을 가져와 저장한다.
+
+        :param webtoon_id: img 파일을 요청할 때 url에 사용되는 웹툰 고유 ID
+        :param img_dir_path: 이미지들이 저장될 디렉터리
+        :return:
+        """
         url = f"http://comic.naver.com/webtoon/detail.nhn?titleId={webtoon_id}&no={self.episode_id}"
         headers = {'Referer': url}
 
