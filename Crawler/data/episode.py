@@ -1,6 +1,7 @@
 import re, requests, os, webbrowser
 from bs4 import BeautifulSoup
 
+
 def atoi(text):
     """
     입력받은 것이 문자면 숫자로, 숫자면 그대로 리턴해준다.
@@ -10,6 +11,7 @@ def atoi(text):
     """
     return int(text) if text.isdigit() else text
 
+
 def natural_keys(text):
     """
     content_image_{에피소드 회차}.jpg
@@ -18,7 +20,8 @@ def natural_keys(text):
     :param text:
     :return:
     """
-    return [ atoi(c) for c in re.split('(\d+)', text)]
+    return [atoi(c) for c in re.split('(\d+)', text)]
+
 
 class Episode:
     def __init__(self, epsiode_id, title, url_thumbnail, created_date, rating):
@@ -41,7 +44,7 @@ class Episode:
         :return:
         """
         html_str = f"<h1>{title}</h1>"
-        img_file_path = os.path.join(img_dir_path, title+" "+self.episode_id+".html")
+        img_file_path = os.path.join(img_dir_path, title + " " + self.episode_id + ".html")
 
         if not os.path.exists(img_file_path):
             file_list = os.listdir(img_dir_path)
@@ -54,7 +57,6 @@ class Episode:
                 f.write(html_str)
 
         webbrowser.get(using="google-chrome").open(img_file_path, new=2)
-
 
     def download_imgs(self, webtoon_id, img_dir_path):
         """
@@ -71,12 +73,11 @@ class Episode:
         html = response.text
         soup = BeautifulSoup(html, 'lxml')
 
-        imgs = soup.select('#container > #content #comic_view_area > img')
+        imgs = soup.select('#container > #content #comic_view_area > .wt_viewer > img')
 
         for img in imgs:
-
             img_url = img['src']
-            img_file_path = os.path.join(img_dir_path, img['id']+".jpg")
+            img_file_path = os.path.join(img_dir_path, img['id'] + ".jpg")
 
             if os.path.exists(img_file_path):
                 continue
@@ -85,7 +86,6 @@ class Episode:
             response = requests.get(img_url, stream=True, headers=headers)
             with open(img_file_path, 'wb') as f:
                 f.write(response.content)
-
 
     # 생성자처럼 동작하게 하는 것
     @classmethod
