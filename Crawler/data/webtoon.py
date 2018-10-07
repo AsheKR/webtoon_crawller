@@ -54,15 +54,21 @@ class WebtoonData:
 
         :return:
         """
+        page = 1
         if not self._episode_dict:
-            response = requests.get(self.url)
-            html = response.text
-            soup = BeautifulSoup(html, 'lxml')
-            episode_list = list(filter(lambda e: e.get('class') == None, soup.select('div#content > table.viewList tr')[1:]))
+            while True:
+                soup = self.get_episode_page(page)
+                page += 1
 
-            for one_episode in episode_list:
-                new_episode_data = Episode.create_from_soup(one_episode)
-                self._episode_dict[new_episode_data.episode_id] = new_episode_data
+                episode_list = list(
+                    filter(lambda e: e.get('class') is None, soup.select('div#content > table.viewList tr')[1:]))
+
+                for one_episode in episode_list:
+                    new_episode_data = Episode.create_from_soup(one_episode)
+                    self._episode_dict[new_episode_data.episode_id] = new_episode_data
+
+                if soup.select_one('div.paginate > div.page_wrap > a.next') is None:
+                    break
 
         return self._episode_dict
 
@@ -72,6 +78,20 @@ class WebtoonData:
         :return:
         """
         return self.episode_dict[index]
+
+    def get_episode_page(self, page):
+        """
+        해당 페이지를 가져옴
+        :param page:
+        :return:
+        """
+        url = self.url + f"&page={page}"
+
+        response = requests.get(url)
+        html = response.text
+        soup = BeautifulSoup(html, 'lxml')
+
+        return soup
 
 
 class WebtoonNotExist(Exception):
