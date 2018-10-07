@@ -1,5 +1,11 @@
-import re
+import re, requests, os, webbrowser
+from bs4 import BeautifulSoup
 
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+def natural_keys(text):
+    return [ atoi(c) for c in re.split('(\d+)', text)]
 
 class Episode:
     def __init__(self, epsiode_id, title, url_thumbnail, created_date, rating):
@@ -11,6 +17,47 @@ class Episode:
 
     def __repr__(self):
         return self.title
+
+    def create_html(self, title, img_dir_path):
+        html_str = f"<h1>{title}</h1>"
+        img_file_path = os.path.join(img_dir_path, title+" "+self.episode_id+".html")
+
+        if not os.path.exists(img_file_path):
+            file_list = os.listdir(img_dir_path)
+            file_list.sort(key=natural_keys)
+
+            for src in file_list:
+                html_str += f'<img src="{src}">'
+
+            with open(img_file_path, 'wt') as f:
+                f.write(html_str)
+
+        webbrowser.get(using="google-chrome").open(img_file_path, new=2)
+
+
+    def download_imgs(self, webtoon_id, img_dir_path):
+        url = f"http://comic.naver.com/webtoon/detail.nhn?titleId={webtoon_id}&no={self.episode_id}"
+        headers = {'Referer': url}
+
+        response = requests.get(url, headers=headers)
+        html = response.text
+        soup = BeautifulSoup(html, 'lxml')
+
+        imgs = soup.select('#container > #content #comic_view_area > img')
+
+        for img in imgs:
+
+            img_url = img['src']
+            img_file_path = os.path.join(img_dir_path, img['id']+".jpg")
+
+            if os.path.exists(img_file_path):
+                continue
+
+            print(img)
+            response = requests.get(img_url, stream=True, headers=headers)
+            with open(img_file_path, 'wb') as f:
+                f.write(response.content)
+
 
     # 생성자처럼 동작하게 하는 것
     @classmethod

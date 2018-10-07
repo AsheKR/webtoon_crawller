@@ -1,7 +1,7 @@
 import re
 from collections import OrderedDict
 
-import requests
+import requests, os
 from bs4 import BeautifulSoup
 
 from data import Episode
@@ -41,7 +41,7 @@ class WebtoonData:
 
         1.page값을 1부터 늘려가면서 '다음' 버튼이 안보일때까지 내용을 가져옴
         2. pickle을 사용해서 Crawler가 가진 webtoon_dict를 저장, 불러오기 하는 방식으로 중복 데이터를 웹에서 받지 않도록 함
-        3, CLI를 구성해서 사용자가 셸에서 선택해서 웹툰 크롤러 기능을 사용할 수 있도록 만들기
+        3, CLI를 구성해서 사용자가 셸에서 선택해서 웹툰 크롤러 기능을 사용할 수 있도록 만들기 (main.py)
         4. Episode의 Detail페이지에서 그림을 다운로드 받기
                 request로 그림 요청시 Referer 설정을 해줘야함 <- 안하면 403 또는 400 에러 발생
                 headers = {'Referer': 'http://comic.naver.com/webtoon/list.nhn?titleId=<WebtoonId>'}
@@ -71,6 +71,24 @@ class WebtoonData:
 
         return self._episode_dict
 
+    def save_imgFiles(self, index):
+        now_episode = self.episode_dict[index]
+        dirname = 'save_data'
+        title_dirname = self.title
+        episode_dirname = now_episode.episode_id
+
+        cur_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        saved_path = os.path.join(cur_path, dirname, 'webtoon_data', title_dirname, episode_dirname)
+
+        print(saved_path)
+
+        if not os.path.isdir(saved_path):
+            print("디렉터리 생성")
+            os.makedirs(saved_path)
+
+        now_episode.download_imgs(self.webtoon_id, saved_path)
+        now_episode.create_html(self.title, saved_path)
+
     def get_episode(self, index):
         """
         Index번째에 해당하는 에피소드를 자신의 episode_dict프로퍼티를 사용해서 리턴
@@ -98,4 +116,4 @@ class WebtoonNotExist(Exception):
         self.title = title
 
     def __str__(self):
-        return f'웹툰( 이름: {self.title}을 찾을 수 없습니다.!'
+        return f'웹툰( 이름: {self.title}을 찾을 수 없습니다! )'
