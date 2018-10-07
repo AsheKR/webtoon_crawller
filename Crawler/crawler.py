@@ -1,4 +1,4 @@
-import requests, re
+import requests, re, pickle
 from bs4 import BeautifulSoup
 from data import WebtoonData, Episode, WebtoonNotExist
 
@@ -22,9 +22,46 @@ class Crawler:
         except KeyError:
             raise WebtoonNotExist(title)
 
+    def save_webtoon_dict(self):
+        dirname = 'save_data'
+        filename = 'webtoon_dict.txt'
+
+        cur_path = os.path.dirname(os.path.abspath(__file__))
+        saved_path = os.path.join(cur_path, dirname)
+        saved_file = os.path.join(saved_path, filename)
+
+        # 폴더가 없으면 생성
+        if not os.path.isdir(saved_path):
+            print("**폴더 생성**")
+            print(saved_path)
+            os.mkdir(saved_path)
+
+        # Save전에 비워있지않은 webtoon_dict가 있는지 확인하고, 웹에서 새 자료를 받아옴
+        if not self._webtoon_dict:
+            os.remove(saved_file)
+            self.show_webtoon_list()
+
+        # 있으면 덮어 씌우자
+        with open(saved_file, 'wb') as f:
+            pickle.dump(self._webtoon_dict, f)
+
     @property
     def webtoon_dict(self):
-        if not self._webtoon_dict:
+
+        dirname = 'save_data'
+        filename = 'webtoon_dict.txt'
+
+        cur_path = os.path.dirname(os.path.abspath(__file__))
+        saved_path = os.path.join(cur_path, dirname)
+        saved_file = os.path.join(saved_path, filename)
+
+        # 기존에 저장해 둔 _webtoon_dict 파일이 있다면 불러옴
+        if os.path.exists(saved_file) and not self._webtoon_dict:
+            with open(saved_file, 'rb') as f:
+                self._webtoon_dict = pickle.load(f)
+
+        # 기존의 _webtoon_dict 파일이 존재하지 않으면 새로 불러옴
+        elif not self._webtoon_dict:
             # 실제 HTTP 요청을 매번 할 필요가 없음 (파일로 저장해두고 필요할 때 갱신하는 기능이 필요)
             html = self.get_html()
             soup = BeautifulSoup(html, 'lxml')
